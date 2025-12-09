@@ -32,3 +32,30 @@ The standout feature is **Smart Attendance**, which uses Google ML Kit to automa
 
 ## 📱 Screenshots
 ![Image](https://github.com/user-attachments/assets/38e80fb4-1c90-4042-958a-6ef8e9cacb33)
+
+## 📱 App Screenshots
+
+<table align="center">
+  <tr>
+    <td align="center">
+      <img src="![Image](https://github.com/user-attachments/assets/22acbfdf-c449-4409-b4bf-de8da5e75351)" width="200" />
+      <br />
+      <b>Login & Splash</b>
+    </td>
+    <td align="center">
+      <img src="YOUR_LINK_HERE_2" width="200" />
+      <br />
+      <b>Teacher Dashboard</b>
+    </td>
+    <td align="center">
+      <img src="YOUR_LINK_HERE_3" width="200" />
+      <br />
+      <b>Smart Attendance (AI)</b>
+    </td>
+    <td align="center">
+      <img src="YOUR_LINK_HERE_4" width="200" />
+      <br />
+      <b>Student Results</b>
+    </td>
+  </tr>
+</table>
