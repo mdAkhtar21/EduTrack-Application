@@ -31,3 +31,4 @@ The standout feature is **Smart Attendance**, which uses Google ML Kit to automa
 * **AI/ML:** CameraX + Google ML Kit
 
 ## 📱 Screenshots
+![Image](https://github.com/user-attachments/assets/38e80fb4-1c90-4042-958a-6ef8e9cacb33)
