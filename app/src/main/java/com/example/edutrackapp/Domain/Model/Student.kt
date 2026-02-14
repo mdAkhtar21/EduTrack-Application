@@ -1,4 +1,10 @@
 package com.example.edutrackapp.Domain.Model
 
-class Student {
-}
+data class Student(
+    val id: Int,
+    val name: String,
+    val rollNo: Int,
+    val branch: String,
+    val semester: Int,
+    val section: String
+)
