@@ -8,9 +8,8 @@ plugins {
 
 android {
     namespace = "com.example.edutrackapp"
-    compileSdk {
-        version = release(36)
-    }
+    compileSdk = 36
+
 
     defaultConfig {
         applicationId = "com.example.edutrackapp"

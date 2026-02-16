@@ -1,55 +1,147 @@
 package com.example.edutrackapp.cms.feature.teacher_Module.attendance.presentation
 
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.edutrackapp.Domain.Model.Attendance
+import com.example.edutrackapp.Domain.repository.AttendanceRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import java.time.LocalDate
 import javax.inject.Inject
 
-@HiltViewModel
-class AttendanceViewModel @Inject constructor() : ViewModel() {
+//@HiltViewModel
+//class AttendanceViewModel @Inject constructor() : ViewModel() {
+//
+//    // We use mutableStateListOf so the UI updates instantly when we click a checkbox
+//    private val _students = mutableStateListOf<StudentUiModel>()
+//    val students: List<StudentUiModel> = _students
+//
+//    init {
+//        loadDummyStudents()
+//    }
+//
+//    private fun loadDummyStudents() {
+//        // Create 20 fake students for testing
+//        val dummyList = List(20) { index ->
+//            StudentUiModel(
+//                id = "ST_$index",
+//                name = "Student Name ${index + 1}",
+//                rollNo = "CS-${100 + index}"
+//            )
+//        }
+//        _students.addAll(dummyList)
+//    }
+//
+//    fun toggleAttendance(studentId: String) {
+//        val index = _students.indexOfFirst { it.id == studentId }
+//        if (index != -1) {
+//            // Flip the boolean (True -> False, False -> True)
+//            val student = _students[index]
+//            _students[index] = student.copy(isPresent = !student.isPresent)
+//        }
+//    }
+//
+//    // ... inside AttendanceViewModel
+//
+//    fun markStudentsBasedOnCount(count: Int) {
+//        // Reset everyone to Absent first (optional)
+//        // _students.replaceAll { it.copy(isPresent = false) }
+//
+//        // Mark the first 'count' students as Present
+//        for (i in 0 until _students.size) {
+//            if (i < count) {
+//                _students[i] = _students[i].copy(isPresent = true)
+//            } else {
+//                _students[i] = _students[i].copy(isPresent = false)
+//            }
+//        }
+//    }
+//}
 
-    // We use mutableStateListOf so the UI updates instantly when we click a checkbox
+
+@HiltViewModel
+class AttendanceViewModel @Inject constructor(
+    private val repository: AttendanceRepository
+) : ViewModel() {
+
     private val _students = mutableStateListOf<StudentUiModel>()
     val students: List<StudentUiModel> = _students
+    private val _subjects = MutableStateFlow<List<SubjectUiModel>>(emptyList())
+    val subjects = _subjects.asStateFlow()
 
-    init {
-        loadDummyStudents()
+    var selectedSubjectId by mutableStateOf(0)
+    var selectedLecture by mutableStateOf(1)
+    var selectedDate by mutableStateOf(LocalDate.now())
+
+    val loggedInFacultyId = 1
+    var selectedSemester by mutableStateOf(3)
+    var selectedSection by mutableStateOf("A")
+    // Update semester/section and reload students
+    fun onSemesterOrSectionChanged(semester: Int, section: String) {
+        selectedSemester = semester
+        selectedSection = section
+        loadStudents(semester, section)
     }
 
-    private fun loadDummyStudents() {
-        // Create 20 fake students for testing
-        val dummyList = List(20) { index ->
-            StudentUiModel(
-                id = "ST_$index",
-                name = "Student Name ${index + 1}",
-                rollNo = "CS-${100 + index}"
+
+    fun loadStudents(semester: Int, section: String) {
+        viewModelScope.launch {
+            val studentsFromDb = repository.getStudentsForFaculty(
+                facultyId = loggedInFacultyId,
+                semester = semester,
+                section = section
+            )
+            _students.clear()
+            _students.addAll(
+                studentsFromDb.map { StudentUiModel(it.id, it.name, it.rollNo) }
             )
         }
-        _students.addAll(dummyList)
     }
 
-    fun toggleAttendance(studentId: String) {
+    fun toggleAttendance(studentId: Int) {
         val index = _students.indexOfFirst { it.id == studentId }
         if (index != -1) {
-            // Flip the boolean (True -> False, False -> True)
-            val student = _students[index]
-            _students[index] = student.copy(isPresent = !student.isPresent)
+            _students[index] = _students[index].copy(isPresent = !_students[index].isPresent)
         }
     }
 
-    // ... inside AttendanceViewModel
-
     fun markStudentsBasedOnCount(count: Int) {
-        // Reset everyone to Absent first (optional)
-        // _students.replaceAll { it.copy(isPresent = false) }
-
-        // Mark the first 'count' students as Present
-        for (i in 0 until _students.size) {
-            if (i < count) {
-                _students[i] = _students[i].copy(isPresent = true)
-            } else {
-                _students[i] = _students[i].copy(isPresent = false)
+        for (i in _students.indices) {
+            _students[i] = _students[i].copy(isPresent = i < count)
+        }
+    }
+    fun loadSubjects() {
+        viewModelScope.launch {
+            val domainSubjects = repository.getSubjectsForFaculty(loggedInFacultyId)
+            _subjects.value = domainSubjects.map {
+                SubjectUiModel(
+                    id = it.id,
+                    name = it.name,
+                    branch = it.branch
+                )
             }
+        }
+    }
+
+    fun submitAttendance() {
+        viewModelScope.launch {
+            val attendanceList = _students.map { student ->
+                Attendance(
+                    studentId = student.id,
+                    subjectId = selectedSubjectId,
+                    facultyId = loggedInFacultyId,
+                    date = selectedDate.toEpochDay(),
+                    lecturePeriod = selectedLecture,
+                    isPresent = student.isPresent
+                )
+            }
+            repository.insertAttendance(attendanceList)
         }
     }
 }

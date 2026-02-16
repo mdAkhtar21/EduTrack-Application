@@ -3,6 +3,7 @@ package com.example.edutrackapp.cms.core.di
 import android.app.Application
 import androidx.room.Room
 import com.example.edutrackapp.cms.core.data.local.EduTrackDatabase
+import com.example.edutrackapp.data.local.AttendanceDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -26,4 +27,14 @@ object AppModule {
     @Provides
     @Singleton
     fun provideUserDao(db: EduTrackDatabase) = db.userDao
+
+    @Provides
+    @Singleton
+    fun provideAttendanceDao(
+        db: EduTrackDatabase
+    ): AttendanceDao {
+        return db.attendanceDao()
+    }
+
+
 }
