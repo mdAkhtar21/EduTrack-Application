@@ -179,6 +179,19 @@ fun MarkAttendanceScreen(
     val selectedLecture = viewModel.selectedLecture
     val selectedDate = viewModel.selectedDate
 
+    val error = viewModel.errorMessage
+
+    LaunchedEffect(error) {
+        error?.let {
+            Toast.makeText(context, it, Toast.LENGTH_LONG).show()
+        }
+    }
+
+
+    LaunchedEffect(Unit) {
+        viewModel.loadSubjects()
+    }
+
     LaunchedEffect(viewModel.selectedSemester, viewModel.selectedSection) {
         viewModel.loadStudents(
             semester = viewModel.selectedSemester,

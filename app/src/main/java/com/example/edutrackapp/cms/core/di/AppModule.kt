@@ -21,7 +21,9 @@ object AppModule {
             app,
             EduTrackDatabase::class.java,
             "edutrack_db"
-        ).build()
+        )
+            .fallbackToDestructiveMigration()
+            .build()
     }
 
     @Provides

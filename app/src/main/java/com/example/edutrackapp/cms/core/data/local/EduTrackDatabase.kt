@@ -6,6 +6,7 @@ import com.example.edutrackapp.cms.core.data.local.dao.*
 import com.example.edutrackapp.cms.core.data.local.entity.*
 import com.example.edutrackapp.data.Attendence.AttendanceEntity
 import com.example.edutrackapp.data.Attendence.Faculty
+import com.example.edutrackapp.data.Attendence.FacultySubjectEntity
 import com.example.edutrackapp.data.Attendence.StudentEntity
 import com.example.edutrackapp.data.Attendence.SubjectEntity
 import com.example.edutrackapp.data.local.AttendanceDao
@@ -20,9 +21,10 @@ import com.example.edutrackapp.data.local.AttendanceDao
         StudentEntity::class,
         SubjectEntity::class,
         Faculty::class,
-        AttendanceEntity::class
+        AttendanceEntity::class,
+        FacultySubjectEntity::class,
     ],
-    version = 1,
+    version = 8,
     exportSchema = false
 )
 abstract class EduTrackDatabase : RoomDatabase() {

@@ -70,6 +70,9 @@ class AttendanceViewModel @Inject constructor(
     private val repository: AttendanceRepository
 ) : ViewModel() {
 
+    var errorMessage by mutableStateOf<String?>(null)
+        private set
+
     private val _students = mutableStateListOf<StudentUiModel>()
     val students: List<StudentUiModel> = _students
     private val _subjects = MutableStateFlow<List<SubjectUiModel>>(emptyList())
@@ -80,7 +83,7 @@ class AttendanceViewModel @Inject constructor(
     var selectedDate by mutableStateOf(LocalDate.now())
 
     val loggedInFacultyId = 1
-    var selectedSemester by mutableStateOf(3)
+    var selectedSemester by mutableStateOf(5)
     var selectedSection by mutableStateOf("A")
     // Update semester/section and reload students
     fun onSemesterOrSectionChanged(semester: Int, section: String) {
@@ -131,6 +134,26 @@ class AttendanceViewModel @Inject constructor(
 
     fun submitAttendance() {
         viewModelScope.launch {
+            val alreadyTaken = repository.isAttendanceAlreadyTaken(
+                facultyId = loggedInFacultyId,
+                subjectId = selectedSubjectId,
+                date = selectedDate.toEpochDay(),
+                lecturePeriod = selectedLecture
+            )
+
+            if (alreadyTaken) {
+                errorMessage = "Attendance already taken for this lecture ❌"
+                return@launch
+            }
+
+            // 2️⃣ 60-minute rule
+            val canTake = repository.canTakeAttendance(loggedInFacultyId)
+            if (!canTake) {
+                errorMessage = "You can take attendance only after 60 minutes ⏳"
+                return@launch
+            }
+
+            // 3️⃣ Insert attendance
             val attendanceList = _students.map { student ->
                 Attendance(
                     studentId = student.id,
@@ -141,7 +164,9 @@ class AttendanceViewModel @Inject constructor(
                     isPresent = student.isPresent
                 )
             }
+
             repository.insertAttendance(attendanceList)
+            errorMessage = null
         }
     }
 }
